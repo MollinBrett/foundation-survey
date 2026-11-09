@@ -1,0 +1,50 @@
+name = "foundation-survey"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Fill in database_id after: npx wrangler d1 create foundation-survey
+[[d1_databases]]
+binding = "SURVEY_DB"
+database_name = "foundation-survey"
+database_id = "YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[vars]
+# Public base URL of the deployed survey, no trailing slash. Used for OAuth redirect URIs.
+PUBLIC_BASE_URL = "https://YOUR_SURVEY_HOST"
+# ISO timestamps. Submissions are refused outside this window.
+SURVEY_OPENS_AT = "2026-12-01T14:00:00Z"
+SURVEY_CLOSES_AT = "2026-12-15T23:59:00Z"
+# Minimum account age in days for X, Discord and GitHub.
+MIN_ACCOUNT_AGE_DAYS = "30"
+# Rate limits per hashed IP per hour.
+RATE_LIMIT_SIGNIN_PER_HOUR = "30"
+RATE_LIMIT_SUBMIT_PER_HOUR = "10"
+# Results: channels with fewer responses than this are not broken out.
+MIN_CHANNEL_REPORT_SIZE = "5"
+# Turnstile site key (public). The secret goes in TURNSTILE_SECRET.
+TURNSTILE_SITE_KEY = "YOUR_TURNSTILE_SITE_KEY"
+# Slack workspace IDs whose members may sign in with Slack (comma separated, e.g. T0123ABC).
+SLACK_ALLOWED_TEAM_IDS = "YOUR_SLACK_TEAM_ID"
+# Slack channel for watchdog quarantines, block proposals and reports (channel ID, e.g. C0123ABC).
+SLACK_WATCHDOG_CHANNEL_ID = "YOUR_SLACK_CHANNEL_ID"
+# Slack user IDs allowed to click Approve / Reject / Restore (comma separated).
+SLACK_APPROVER_USER_IDS = "YOUR_SLACK_USER_IDS"
+# Optional: require Discord sign-ins to be members of this server (guild ID). Empty = no check.
+DISCORD_REQUIRED_GUILD_ID = ""
+# Discord server the fallback bot searches for handles (guild ID). Empty = Discord fallback off.
+DISCORD_FALLBACK_GUILD_ID = ""
+# Mattermost server base URL. Empty = Mattermost off.
+MATTERMOST_URL = ""
+
+# Secrets (set with: npx wrangler secret put NAME). Never commit these.
+#   IDENTITY_PEPPER          random 32+ bytes; hashes account IDs and IPs
+#   SESSION_SECRET           random 32+ bytes; signs cookies
+#   ADMIN_API_KEY            random 32+ bytes; the agents' key for /admin/api
+#   TURNSTILE_SECRET
+#   X_CLIENT_ID, X_CLIENT_SECRET
+#   DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN
+#   SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET
+#   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+#   MATTERMOST_CLIENT_ID, MATTERMOST_CLIENT_SECRET, MATTERMOST_BOT_TOKEN

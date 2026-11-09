@@ -1,0 +1,13 @@
+agent: ./agent.md
+environment_id: ../survey-watchdog/environment.yaml
+vault_ids: []          # same vlt_... ID as the watchdog
+schedule:
+  type: cron
+  expression: "0 13 * * *"     # 13:00 UTC daily. Placeholder: confirm the time you want.
+  timezone: Etc/UTC
+initial_events:
+  - type: user.message
+    content:
+      - type: text
+        text: |
+          Write and post today's survey report. If the survey has closed and no final report has been posted, write the final report instead.

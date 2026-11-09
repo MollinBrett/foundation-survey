@@ -1,0 +1,13 @@
+agent: ./agent.md
+environment_id: ./environment.yaml
+vault_ids: []          # fill in the vlt_... ID after the vault is created (README, step 3)
+schedule:
+  type: cron
+  expression: "7 * * * *"      # every hour at :07
+  timezone: Etc/UTC
+initial_events:
+  - type: user.message
+    content:
+      - type: text
+        text: |
+          Run your hourly review of new survey responses now.

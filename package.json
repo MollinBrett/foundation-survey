@@ -1,0 +1,24 @@
+{
+  "name": "foundation-survey",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply SURVEY_DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply SURVEY_DB --remote",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "fixtures": "node scripts/make-watchdog-fixtures.mjs"
+  },
+  "dependencies": {
+    "hono": "^4.13.17"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.6.1",
+    "@cloudflare/workers-types": "^5.20261109.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.159.0"
+  }
+}

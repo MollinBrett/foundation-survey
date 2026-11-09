@@ -1,0 +1,252 @@
+[
+  {
+    "id": "fixture-01",
+    "label": "keep",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-02",
+    "label": "keep",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-03",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-04",
+    "label": "keep",
+    "channel": "slack"
+  },
+  {
+    "id": "fixture-05",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-06",
+    "label": "keep",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-07",
+    "label": "keep",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-08",
+    "label": "keep",
+    "channel": "mattermost"
+  },
+  {
+    "id": "fixture-09",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-10",
+    "label": "keep",
+    "channel": "slack"
+  },
+  {
+    "id": "fixture-11",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-12",
+    "label": "keep",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-13",
+    "label": "keep",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-14",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-15",
+    "label": "keep",
+    "channel": "slack"
+  },
+  {
+    "id": "fixture-16",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-17",
+    "label": "keep",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-18",
+    "label": "keep",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-19",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-20",
+    "label": "keep",
+    "channel": "mattermost"
+  },
+  {
+    "id": "fixture-21",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-22",
+    "label": "keep",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-23",
+    "label": "keep",
+    "channel": "slack"
+  },
+  {
+    "id": "fixture-24",
+    "label": "keep",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-25",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-26",
+    "label": "keep",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-27",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-28",
+    "label": "keep",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-29",
+    "label": "keep",
+    "channel": "slack"
+  },
+  {
+    "id": "fixture-30",
+    "label": "keep",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-31",
+    "label": "spam",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-32",
+    "label": "spam",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-33",
+    "label": "spam",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-34",
+    "label": "spam",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-35",
+    "label": "spam",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-36",
+    "label": "spam",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-37",
+    "label": "spam",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-38",
+    "label": "spam",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-39",
+    "label": "abuse",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-40",
+    "label": "abuse",
+    "channel": "discord"
+  },
+  {
+    "id": "fixture-41",
+    "label": "abuse",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-42",
+    "label": "abuse",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-43",
+    "label": "abuse",
+    "channel": "github"
+  },
+  {
+    "id": "fixture-44",
+    "label": "coordinated",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-45",
+    "label": "coordinated",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-46",
+    "label": "coordinated",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-47",
+    "label": "coordinated",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-48",
+    "label": "coordinated",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-49",
+    "label": "coordinated",
+    "channel": "x"
+  },
+  {
+    "id": "fixture-50",
+    "label": "coordinated",
+    "channel": "x"
+  }
+]

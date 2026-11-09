@@ -1,0 +1,4 @@
+# The container only. The admin key is added with `ant beta:vaults:credentials create` (see README),
+# never written to a file.
+type: vault
+display_name: foundation-survey-agents

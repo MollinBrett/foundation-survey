@@ -1,0 +1,9 @@
+# Shared by survey-watchdog and survey-reporter.
+# Only the survey host is reachable. No web search, no package installs, no other hosts.
+name: foundation-survey-agents
+config:
+  type: cloud
+  networking:
+    type: limited
+    allowed_hosts:
+      - YOUR_SURVEY_HOST
