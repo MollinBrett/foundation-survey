@@ -1,4 +1,4 @@
-# Shared by survey-watchdog and survey-reporter.
+# Shared by all four survey agents.
 # Only the survey host is reachable. No web search, no package installs, no other hosts.
 name: foundation-survey-agents
 config:

@@ -4,6 +4,8 @@
 // the bottom two (1, 2) negative, the middle (3) neutral. "Don't know" is left out of the
 // percentages and counted separately.
 import { DONT_KNOW, FAMILIAR_MIN, HEADLINE_KPI, QUESTIONS, type Answers } from "./survey";
+import { type Env, intVar } from "./env";
+import { surveyWindow } from "./db";
 
 export interface Tally {
   answered: number; // excludes "Don't know"
@@ -86,5 +88,52 @@ export function computeResults(responses: Answers[], opts: { target: number; min
     roles,
     min_group_report_size: opts.minGroup,
     kpis,
+  };
+}
+
+// ---------- Loading from the database ----------
+
+
+export interface FullResults extends Results {
+  window: "before" | "open" | "closed";
+  /** Each KPI recomputed with the removed (quarantined) responses put back, to show how much moderation moved it. */
+  including_removed: { id: string; respondents: number; pct_positive: number | null; pct_negative: number | null }[];
+  respondents_by_channel: Record<string, number>;
+  quarantined_excluded: { category: string | null; n: number }[];
+}
+
+export async function loadResults(env: Env): Promise<FullResults> {
+  const db = env.SURVEY_DB;
+  const [all, quarantined, channels] = await db.batch([
+    db.prepare("SELECT answers, status FROM responses"),
+    db.prepare("SELECT status_category AS category, COUNT(*) AS n FROM responses WHERE status = 'quarantined' GROUP BY status_category"),
+    db.prepare("SELECT channel, COUNT(*) AS n FROM responses WHERE status = 'accepted' GROUP BY channel"),
+  ]);
+  const rows = (all!.results as { answers: string; status: string }[]).map((r) => ({ a: JSON.parse(r.answers) as Answers, status: r.status }));
+  const opts = { target: intVar(env.KPI_TARGET_PCT, 80), minGroup: intVar(env.MIN_GROUP_REPORT_SIZE, 30) };
+  const results = computeResults(rows.filter((r) => r.status === "accepted").map((r) => r.a), opts);
+  const everything = computeResults(rows.map((r) => r.a), opts);
+
+  // Channels below the minimum are folded together so small groups cannot be singled out.
+  const minChannel = intVar(env.MIN_CHANNEL_REPORT_SIZE, 5);
+  const respondents_by_channel: Record<string, number> = {};
+  let other = 0;
+  for (const r of channels!.results as { channel: string; n: number }[]) {
+    if (r.n >= minChannel) respondents_by_channel[r.channel] = r.n;
+    else other += r.n;
+  }
+  if (other > 0) respondents_by_channel["other channels"] = other;
+
+  return {
+    window: surveyWindow(env),
+    ...results,
+    including_removed: everything.kpis.map((k) => ({
+      id: k.id,
+      respondents: everything.respondents,
+      pct_positive: k.all.pct_positive,
+      pct_negative: k.all.pct_negative,
+    })),
+    respondents_by_channel,
+    quarantined_excluded: quarantined!.results as { category: string | null; n: number }[],
   };
 }

@@ -10,18 +10,32 @@ export interface Env {
   MIN_CHANNEL_REPORT_SIZE?: string;
   MIN_GROUP_REPORT_SIZE?: string;
   KPI_TARGET_PCT?: string;
+  // Limits on blocks the watchdog may apply without a person.
+  MAX_BLOCK_HOURS_NARROW?: string; // network (asn) or launch-post link (source)
+  MAX_BLOCK_HOURS_BROAD?: string; // whole channel (provider) or country
+  MAX_AUTO_BLOCKS_PER_DAY?: string;
+  IDENTITY_RETENTION_DAYS?: string;
   TURNSTILE_SITE_KEY?: string;
   SLACK_ALLOWED_TEAM_IDS?: string;
   SLACK_WATCHDOG_CHANNEL_ID?: string;
-  SLACK_APPROVER_USER_IDS?: string;
+  SLACK_APPROVER_USER_IDS?: string; // may override the agents (restore, lift a block)
+  SLACK_ANNOUNCEMENT_APPROVER_IDS?: string; // may approve, edit or skip announcements
+  SLACK_ANNOUNCE_CHANNEL_ID?: string; // community Slack channel that receives announcements
   DISCORD_REQUIRED_GUILD_ID?: string;
   DISCORD_FALLBACK_GUILD_ID?: string;
   MATTERMOST_URL?: string;
+  // Cloudflare Access in front of /results.
+  ACCESS_TEAM_DOMAIN?: string; // e.g. xrplf.cloudflareaccess.com
+  ACCESS_AUD?: string;
 
   // Secrets
   IDENTITY_PEPPER: string;
   SESSION_SECRET: string;
-  ADMIN_API_KEY: string;
+  // One key per agent. Each key only unlocks that agent's part of /admin/api.
+  WATCHDOG_API_KEY?: string;
+  AUDITOR_API_KEY?: string;
+  REPORTER_API_KEY?: string;
+  ANNOUNCER_API_KEY?: string;
   TURNSTILE_SECRET?: string;
   X_CLIENT_ID?: string;
   X_CLIENT_SECRET?: string;
@@ -37,6 +51,13 @@ export interface Env {
   MATTERMOST_CLIENT_ID?: string;
   MATTERMOST_CLIENT_SECRET?: string;
   MATTERMOST_BOT_TOKEN?: string;
+  // Posting announcements
+  DISCORD_ANNOUNCE_WEBHOOK_URL?: string;
+  MATTERMOST_ANNOUNCE_WEBHOOK_URL?: string;
+  X_POST_API_KEY?: string;
+  X_POST_API_SECRET?: string;
+  X_POST_ACCESS_TOKEN?: string;
+  X_POST_ACCESS_SECRET?: string;
 
   // Tests only
   TEST_MIGRATIONS?: unknown;
@@ -52,6 +73,9 @@ export const PROVIDER_LABELS: Record<Provider, string> = {
   github: "GitHub",
   mattermost: "Mattermost",
 };
+
+export type AgentRole = "watchdog" | "auditor" | "reporter" | "announcer";
+export const AGENT_ROLES: AgentRole[] = ["watchdog", "auditor", "reporter", "announcer"];
 
 export function intVar(value: string | undefined, fallback: number): number {
   const n = Number.parseInt(value ?? "", 10);

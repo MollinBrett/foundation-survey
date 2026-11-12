@@ -1,9 +1,9 @@
 agent: ./agent.md
 environment_id: ../survey-watchdog/environment.yaml
-vault_ids: []          # same vlt_... ID as the watchdog
+vault_ids: []          # fill in this agent's own vlt_... ID after its vault is created (README, step 3)
 schedule:
   type: cron
-  expression: "0 13 * * *"     # 13:00 UTC daily. Placeholder: confirm the time you want.
+  expression: "0 13 * * *"
   timezone: Etc/UTC
 initial_events:
   - type: user.message

@@ -31,10 +31,23 @@ KPI_TARGET_PCT = "80"
 TURNSTILE_SITE_KEY = "YOUR_TURNSTILE_SITE_KEY"
 # Slack workspace IDs whose members may sign in with Slack (comma separated, e.g. T0123ABC).
 SLACK_ALLOWED_TEAM_IDS = "YOUR_SLACK_TEAM_ID"
-# Slack channel for watchdog quarantines, block proposals and reports (channel ID, e.g. C0123ABC).
+# Slack channel where the agents report what they did and where announcement drafts arrive (channel ID).
 SLACK_WATCHDOG_CHANNEL_ID = "YOUR_SLACK_CHANNEL_ID"
-# Slack user IDs allowed to click Approve / Reject / Restore (comma separated).
+# Slack user IDs who MAY override the agents (restore responses, lift a block early). Nobody has to.
 SLACK_APPROVER_USER_IDS = "YOUR_SLACK_USER_IDS"
+# Slack user ID of the announcement owner: approves, edits or skips each launch and reminder post.
+SLACK_ANNOUNCEMENT_APPROVER_IDS = "YOUR_ANNOUNCEMENT_OWNER_SLACK_USER_ID"
+# Community Slack channel that receives the announcements (channel ID). Empty = hand off to a person.
+SLACK_ANNOUNCE_CHANNEL_ID = ""
+# Limits on blocks the watchdog agent applies without a person. Enforced in code.
+MAX_BLOCK_HOURS_NARROW = "24"   # one network or one launch-post link
+MAX_BLOCK_HOURS_BROAD = "6"     # a whole channel or country (only one of these may be active at a time)
+MAX_AUTO_BLOCKS_PER_DAY = "6"
+# Account hashes and network details are deleted this many days after the survey closes.
+IDENTITY_RETENTION_DAYS = "30"
+# Cloudflare Access in front of /results. Without both values the results page stays closed.
+ACCESS_TEAM_DOMAIN = "YOUR_TEAM.cloudflareaccess.com"
+ACCESS_AUD = "YOUR_ACCESS_APPLICATION_AUD"
 # Optional: require Discord sign-ins to be members of this server (guild ID). Empty = no check.
 DISCORD_REQUIRED_GUILD_ID = ""
 # Discord server the fallback bot searches for handles (guild ID). Empty = Discord fallback off.
@@ -45,10 +58,18 @@ MATTERMOST_URL = ""
 # Secrets (set with: npx wrangler secret put NAME). Never commit these.
 #   IDENTITY_PEPPER          random 32+ bytes; hashes account IDs and IPs
 #   SESSION_SECRET           random 32+ bytes; signs cookies
-#   ADMIN_API_KEY            random 32+ bytes; the agents' key for /admin/api
+#   WATCHDOG_API_KEY, AUDITOR_API_KEY, REPORTER_API_KEY, ANNOUNCER_API_KEY
+#                            four different random 32+ byte keys, one per agent
 #   TURNSTILE_SECRET
 #   X_CLIENT_ID, X_CLIENT_SECRET
 #   DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN
 #   SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET
 #   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
 #   MATTERMOST_CLIENT_ID, MATTERMOST_CLIENT_SECRET, MATTERMOST_BOT_TOKEN
+# Posting announcements (each optional; a channel without them is handed to a person):
+#   DISCORD_ANNOUNCE_WEBHOOK_URL, MATTERMOST_ANNOUNCE_WEBHOOK_URL
+#   X_POST_API_KEY, X_POST_API_SECRET, X_POST_ACCESS_TOKEN, X_POST_ACCESS_SECRET
+
+# Every 15 minutes: publish approved announcements, self-check, clean up.
+[triggers]
+crons = ["*/15 * * * *"]

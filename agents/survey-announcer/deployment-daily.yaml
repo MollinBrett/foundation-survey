@@ -1,0 +1,13 @@
+agent: ./agent.md
+environment_id: ../survey-watchdog/environment.yaml
+vault_ids: []          # fill in this agent's own vlt_... ID after its vault is created (README, step 3)
+schedule:
+  type: cron
+  expression: "11 12 * * *"
+  timezone: Etc/UTC
+initial_events:
+  - type: user.message
+    content:
+      - type: text
+        text: |
+          Check whether any survey announcement needs drafting today, and draft it for approval if so.

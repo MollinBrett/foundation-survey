@@ -1,9 +1,9 @@
 agent: ./agent.md
 environment_id: ./environment.yaml
-vault_ids: []          # fill in the vlt_... ID after the vault is created (README, step 3)
+vault_ids: []          # fill in this agent's own vlt_... ID after its vault is created (README, step 3)
 schedule:
   type: cron
-  expression: "7 * * * *"      # every hour at :07
+  expression: "7 * * * *"
   timezone: Etc/UTC
 initial_events:
   - type: user.message

@@ -8,7 +8,9 @@ import { fallbackEnabled, lookupHandle, normalizeHandle, sendCode, type Fallback
 import { freeText, parseAnswers } from "./survey";
 import { codeForm, handleForm, landingPage, messagePage, surveyPage } from "./views";
 import { admin } from "./admin";
-import { handleInteractive, verifySlackRequest } from "./slack";
+import { handleInteractive, verifySlackRequest, type InteractivePayload } from "./slack";
+import { loadPageData, renderResultsPage, verifyAccessToken } from "./dashboard";
+import { runScheduled } from "./cron";
 
 type C = Context<{ Bindings: Env }>;
 const app = new Hono<{ Bindings: Env }>();
@@ -112,6 +114,8 @@ app.get("/auth/:provider/callback", async (c) => {
     return finishVerification(c, provider, user.userId);
   } catch (err) {
     console.error(`oauth ${provider}`, err);
+    // Counted per hour so the self-check can warn when a channel's sign-in is broken.
+    await rateLimit(c.env, `signin_error:${provider}`, Number.MAX_SAFE_INTEGER).catch(() => {});
     return landing(c, `We could not complete sign-in with ${PROVIDER_LABELS[provider]}. Please try again.`, 400);
   }
 });
@@ -264,11 +268,30 @@ app.post("/slack/interactive", async (c) => {
   if (!(await verifySlackRequest(c.env, raw, c.req.header("X-Slack-Request-Timestamp") ?? null, c.req.header("X-Slack-Signature") ?? null))) {
     return c.text("invalid signature", 401);
   }
-  const payload = JSON.parse(new URLSearchParams(raw).get("payload") ?? "{}");
-  c.executionCtx.waitUntil(
-    handleInteractive(c.env, payload).catch((err) => audit(c.env, "system", "slack_interactive_error", { error: String(err) })),
-  );
+  const payload = JSON.parse(new URLSearchParams(raw).get("payload") ?? "{}") as InteractivePayload;
+  const failed = (err: unknown) => audit(c.env, "system", "slack_interactive_error", { error: String(err) });
+  if (payload.type === "view_submission") {
+    // A form submission must be answered directly: validation errors go back in the response.
+    try {
+      const out = await handleInteractive(c.env, payload);
+      return out.body ? c.json(out.body) : c.body(null, 200);
+    } catch (err) {
+      await failed(err);
+      return c.json({ response_action: "errors", errors: { text: "Something went wrong. Nothing was saved." } });
+    }
+  }
+  c.executionCtx.waitUntil(handleInteractive(c.env, payload).catch(failed));
   return c.body(null, 200);
+});
+
+// ---------- Results page (private) ----------
+
+app.get("/results", async (c) => {
+  const token = c.req.header("Cf-Access-Jwt-Assertion") ?? getCookie(c, "CF_Authorization");
+  const viewer = await verifyAccessToken(c.env, token);
+  if (!viewer) return c.notFound();
+  c.header("Cache-Control", "no-store");
+  return c.html(renderResultsPage(await loadPageData(c.env)));
 });
 
 app.onError((err, c) => {
@@ -276,4 +299,10 @@ app.onError((err, c) => {
   return c.html(messagePage("Something went wrong", "Please try again in a few minutes."), 500);
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runScheduled(env));
+  },
+};
+export { app };

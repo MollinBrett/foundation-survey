@@ -1,0 +1,4 @@
+# The container only. This agent's own API key is added with `ant beta:vaults:credentials create`
+# (see README), never written to a file. Each agent has a separate vault so it cannot use another agent's key.
+type: vault
+display_name: foundation-survey-auditor

@@ -1,10 +1,10 @@
 // After a watchdog run against the staging database, compare its decisions with the labels.
-// Usage: SURVEY_URL=https://staging-host SURVEY_ADMIN_KEY=... node scripts/score-watchdog.mjs
+// Usage (with the watchdog or reporter key): SURVEY_URL=https://staging-host SURVEY_API_KEY=... node scripts/score-watchdog.mjs
 import { readFileSync } from "node:fs";
 
 const url = process.env.SURVEY_URL;
-const key = process.env.SURVEY_ADMIN_KEY;
-if (!url || !key) throw new Error("set SURVEY_URL and SURVEY_ADMIN_KEY");
+const key = process.env.SURVEY_API_KEY;
+if (!url || !key) throw new Error("set SURVEY_URL and SURVEY_API_KEY");
 const labels = JSON.parse(readFileSync("test/fixtures/watchdog-samples.json", "utf8"));
 const res = await fetch(`${url}/admin/api/responses?status=quarantined&limit=500`, { headers: { Authorization: `Bearer ${key}` } });
 const quarantined = new Set((await res.json()).responses.map((r) => r.id));
