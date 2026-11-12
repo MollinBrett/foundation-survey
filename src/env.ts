@@ -8,6 +8,8 @@ export interface Env {
   RATE_LIMIT_SIGNIN_PER_HOUR?: string;
   RATE_LIMIT_SUBMIT_PER_HOUR?: string;
   MIN_CHANNEL_REPORT_SIZE?: string;
+  MIN_GROUP_REPORT_SIZE?: string;
+  KPI_TARGET_PCT?: string;
   TURNSTILE_SITE_KEY?: string;
   SLACK_ALLOWED_TEAM_IDS?: string;
   SLACK_WATCHDOG_CHANNEL_ID?: string;

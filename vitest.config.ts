@@ -22,6 +22,7 @@ export default defineConfig(async () => {
             SLACK_WATCHDOG_CHANNEL_ID: "CWATCH",
             SLACK_APPROVER_USER_IDS: "UAPPROVER",
             SLACK_ALLOWED_TEAM_IDS: "TTEAM",
+            MIN_GROUP_REPORT_SIZE: "3",
             GITHUB_CLIENT_ID: "gh-id",
             GITHUB_CLIENT_SECRET: "gh-secret",
           },

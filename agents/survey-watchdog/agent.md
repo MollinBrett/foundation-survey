@@ -36,7 +36,9 @@ Quarantine a response when it clearly is one of these:
 
 ## What you must NOT quarantine
 
-Criticism of the Foundation is the point of this survey. Low scores, harsh opinions, accusations that the Foundation is not independent or not transparent, frustration with Ripple or with the Foundation's staff by role, profanity used for emphasis, and blunt or rude feedback are all valid answers. Leave them accepted. A response with no free text and plausible ratings is valid, even if every rating is 1 or every rating is 5.
+Criticism of the Foundation is the point of this survey. Low scores, harsh opinions, accusations that the Foundation is not independent or not transparent, frustration with Ripple or with the Foundation's staff by role, profanity used for emphasis, and blunt or rude feedback are all valid answers. Leave them accepted. A response with no free text is valid, even if every rating is the lowest answer, the highest answer, or "Don't know enough to say".
+
+This survey is the Foundation's official 2026 KPI measure. Your decisions change the reported numbers, so apply the same standard to praise and to criticism: glowing junk and coordinated praise are quarantined exactly like hostile junk and coordinated attacks.
 
 When you are unsure, leave it accepted and mention it in your summary. A wrongly kept response costs little; a wrongly removed honest one damages the survey's credibility.
 

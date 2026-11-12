@@ -2,7 +2,7 @@
 
 A public survey on how the XRPL community sees the Foundation. Every respondent is verified as a real person on one of five channels (X, Discord, Slack, GitHub, Mattermost), can answer once, and their answers are stored apart from who they are. Two Claude Managed Agents watch the responses: a **watchdog** that quarantines spam and abuse every hour, and a **reporter** that posts results daily. Blocking anything takes a human click in Slack.
 
-Status: built and tested locally. **Not deployed.** The questions in `src/survey.ts` are a draft awaiting approval.
+Status: built and tested locally. **Not deployed.** The 10 questions in `src/survey.ts` were approved on 2026-11-12, and this survey is the Foundation's official 2026 KPI measure.
 
 ## How it works
 
@@ -27,6 +27,7 @@ reporter agent (daily)  ──► /admin/api ──► daily report, then one fi
 
 - **One response per account.** The account hash is the identities table's primary key, written in the same transaction as the response.
 - **Anonymity.** The two tables share no column, and the identities table holds no timestamp, so they cannot be joined. The same account hashes the same way on paths A and B, so nobody answers twice by switching paths.
+- **KPI numbers come from code, not from an agent.** `GET /admin/api/results` computes every figure (`src/results.ts`, covered by tests). The reporter agent only relays them and summarizes the free text.
 - **Agents can't overreach.** The admin API lets agents read, quarantine and propose. Restoring and blocking exist only behind Slack buttons that check the clicker against `SLACK_APPROVER_USER_IDS`.
 
 ## Repository
@@ -34,7 +35,8 @@ reporter agent (daily)  ──► /admin/api ──► daily report, then one fi
 | Path | What |
 |---|---|
 | `src/index.ts` | Routes: landing, sign-in (A), handle + code (B), survey, Slack buttons |
-| `src/survey.ts` | **The questions (draft).** Edit here; form and validation follow |
+| `src/survey.ts` | **The approved questions.** Keep wording and order fixed so later surveys are comparable |
+| `src/results.ts` | KPI scoring |
 | `src/providers.ts` | OAuth settings per channel, account-age and membership checks |
 | `src/fallback.ts` | Bot lookup and DM for path B (Discord, Slack, Mattermost) |
 | `src/admin.ts` | The agents' API (`/admin/api/*`) |
@@ -42,7 +44,7 @@ reporter agent (daily)  ──► /admin/api ──► daily report, then one fi
 | `migrations/0001_init.sql` | Database tables |
 | `agents/survey-watchdog/` | Watchdog agent, shared environment and vault, hourly schedule |
 | `agents/survey-reporter/` | Reporter agent, daily schedule |
-| `test/app.test.ts` | 16 tests: one-response rule, anonymity, age checks, code path, agent API limits, Slack approvals |
+| `test/app.test.ts` | 19 tests: one-response rule, anonymity, age checks, code path, KPI scoring, agent API limits, Slack approvals |
 | `test/fixtures/watchdog-samples.*` | 50 labeled responses for testing the watchdog on staging |
 | `scripts/score-watchdog.mjs` | Scores a watchdog run against those labels |
 
@@ -53,6 +55,30 @@ npm install
 ```bash
 npm test
 ```
+
+## The questions and how they are scored
+
+Ten questions: familiarity (a filter), seven KPI ratings, one optional free-text question, and role.
+
+| KPI question | Answers (worst to best) |
+|---|---|
+| Overall satisfaction (**headline**) | Very dissatisfied to Very satisfied |
+| Impact on the XRP Ledger ecosystem | Very negative to Very positive |
+| Independence from Ripple | Not at all to Completely independent |
+| Transparency about decisions | Not at all to Extremely transparent |
+| Transparency about finances | Not at all to Extremely transparent |
+| Listening to community input | Not at all well to Extremely well |
+| Leadership team performance | Very poor to Very good |
+
+- Every answer is labeled in words. Each KPI question also offers "Don't know enough to say".
+- **Positive** = top two answers, **negative** = bottom two, **neutral** = the middle one. "Don't know" is left out of the percentages and counted separately.
+- Each KPI is reported for all respondents, for respondents at least "Moderately familiar" with the Foundation, and by role for roles with at least `MIN_GROUP_REPORT_SIZE` responses (default 30).
+- The target is `KPI_TARGET_PCT` percent positive (default 80, taken from the 2027 budget workbook; confirm it for 2026).
+- The free-text question is used for themes only and never counts as positive or negative.
+- Quarantined responses are excluded, and every report states how many were excluded.
+- Respondents choose to take part, so results describe respondents, not the whole community, and no margin of error applies.
+
+The design follows published guidance: fully labeled five-point scales, direct questions rather than agree/disagree statements, the overall question before the specific ones, one idea per question, an explicit "Don't know", and role asked last.
 
 ## Setup
 
@@ -164,8 +190,9 @@ The bar: **zero genuine responses removed** (30 of the 50 are genuine, including
 
 ## Launch checklist
 
-- [ ] Questions in `src/survey.ts` approved
-- [ ] Settings confirmed: account age (`MIN_ACCOUNT_AGE_DAYS`, default 30), rate limits, open and close times
+- [x] Questions in `src/survey.ts` approved (2026-11-12)
+- [ ] Settings confirmed: KPI target (`KPI_TARGET_PCT`, default 80), account age (`MIN_ACCOUNT_AGE_DAYS`, default 30), rate limits, open and close times
+- [ ] Pilot with 10 to 25 people to catch confusing wording, then clear the pilot responses
 - [ ] Each channel signed in end to end on staging
 - [ ] Watchdog scored on staging
 - [ ] `npm run deploy`, schedules unpaused

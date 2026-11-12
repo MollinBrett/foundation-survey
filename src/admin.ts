@@ -6,6 +6,7 @@ import { randomToken, timingSafeEqual } from "./crypto";
 import { audit, nowIso, surveyWindow } from "./db";
 import { postToWatchdogChannel, proposalBlocks, quarantineBlocks, slackEscape } from "./slack";
 import { freeText, type Answers } from "./survey";
+import { computeResults } from "./results";
 
 export const admin = new Hono<{ Bindings: Env }>();
 
@@ -86,6 +87,36 @@ admin.get("/responses", async (c) => {
   const sql = `SELECT * FROM responses ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY submitted_at ASC LIMIT ?${binds.length}`;
   const { results } = await c.env.SURVEY_DB.prepare(sql).bind(...binds).all();
   return c.json({ responses: results.map(rowOut) });
+});
+
+/** KPI results over accepted responses only. All percentages are computed here, not by an agent. */
+admin.get("/results", async (c) => {
+  const db = c.env.SURVEY_DB;
+  const [accepted, quarantined, channels] = await db.batch([
+    db.prepare("SELECT answers FROM responses WHERE status = 'accepted'"),
+    db.prepare("SELECT status_category AS category, COUNT(*) AS n FROM responses WHERE status = 'quarantined' GROUP BY status_category"),
+    db.prepare("SELECT channel, COUNT(*) AS n FROM responses WHERE status = 'accepted' GROUP BY channel"),
+  ]);
+  const answers = (accepted!.results as { answers: string }[]).map((r) => JSON.parse(r.answers) as Answers);
+  const results = computeResults(answers, {
+    target: intVar(c.env.KPI_TARGET_PCT, 80),
+    minGroup: intVar(c.env.MIN_GROUP_REPORT_SIZE, 30),
+  });
+  // Channels below the minimum are folded together so small groups cannot be singled out.
+  const minChannel = intVar(c.env.MIN_CHANNEL_REPORT_SIZE, 5);
+  const by_channel: Record<string, number> = {};
+  let other = 0;
+  for (const r of channels!.results as { channel: string; n: number }[]) {
+    if (r.n >= minChannel) by_channel[r.channel] = r.n;
+    else other += r.n;
+  }
+  if (other > 0) by_channel["other channels"] = other;
+  return c.json({
+    window: surveyWindow(c.env),
+    ...results,
+    respondents_by_channel: by_channel,
+    quarantined_excluded: quarantined!.results,
+  });
 });
 
 /** Free-text fingerprints shared by more than one response: copy-paste detector. */

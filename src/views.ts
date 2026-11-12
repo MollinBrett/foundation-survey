@@ -1,4 +1,4 @@
-import { DONT_KNOW, INTRO, QUESTIONS, type Answers } from "./survey";
+import { DONT_KNOW, DONT_KNOW_LABEL, INTRO, QUESTIONS, type Answers } from "./survey";
 import { PROVIDER_LABELS, type Provider } from "./env";
 
 export function esc(s: unknown): string {
@@ -20,8 +20,8 @@ p{margin:0 0 16px}.muted{color:var(--muted)}.err{color:var(--err);font-weight:60
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .alt{font-size:.9rem}.alt a{color:var(--accent)}
 fieldset{border:1px solid var(--line);border-radius:8px;padding:16px;margin:0 0 16px}legend{font-weight:600;padding:0 4px}
-label{display:block;padding:4px 0}.scale{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.scale label{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:6px;padding:4px 10px}
-.ends{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+label{display:block;padding:4px 0}.dk{margin-top:6px;padding-top:8px;border-top:1px dashed var(--line);color:var(--muted)}
+fieldset input.other-text{margin:4px 0 0 24px;width:calc(100% - 24px)}fieldset.single:not(:has(input[data-other]:checked)) .other-text{display:none}
 input[type=text],textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit}
 textarea{min-height:96px}`;
 
@@ -92,20 +92,23 @@ ${error ? `<p class="err">${esc(error)}</p>` : ""}
 
 function questionHtml(q: (typeof QUESTIONS)[number], values: Answers): string {
   const v = values[q.id];
-  if (q.kind === "multi") {
-    const chosen = new Set(Array.isArray(v) ? v : []);
-    const opts = q.options
-      .map((o) => `<label><input type="checkbox" name="${q.id}" value="${esc(o)}"${chosen.has(o) ? " checked" : ""}> ${esc(o)}</label>`)
-      .join("");
-    return `<fieldset><legend>${esc(q.text)}</legend>${opts}</fieldset>`;
-  }
-  if (q.kind === "scale") {
-    const opts: string[] = [];
-    for (let i = q.min; i <= q.max; i++) {
-      opts.push(`<label><input type="radio" name="${q.id}" value="${i}"${v === i ? " checked" : ""}${q.required ? " required" : ""}> ${i}</label>`);
+  if (q.kind === "rating") {
+    const opts = q.labels.map(
+      (label, i) => `<label><input type="radio" name="${q.id}" value="${i + 1}"${v === i + 1 ? " checked" : ""} required> ${esc(label)}</label>`,
+    );
+    if (q.allowDontKnow) {
+      opts.push(`<label class="dk"><input type="radio" name="${q.id}" value="${DONT_KNOW}"${v === DONT_KNOW ? " checked" : ""}> ${esc(DONT_KNOW_LABEL)}</label>`);
     }
-    if (q.allowDontKnow) opts.push(`<label><input type="radio" name="${q.id}" value="${DONT_KNOW}"${v === DONT_KNOW ? " checked" : ""}> Don't know</label>`);
-    return `<fieldset><legend>${esc(q.text)}</legend><div class="scale">${opts.join("")}</div><div class="ends"><span>${esc(q.min)} = ${esc(q.minLabel)}</span><span>${esc(q.max)} = ${esc(q.maxLabel)}</span></div></fieldset>`;
+    return `<fieldset><legend>${esc(q.text)}</legend>${opts.join("")}</fieldset>`;
+  }
+  if (q.kind === "single") {
+    const opts = q.options
+      .map((o) => `<label><input type="radio" name="${q.id}" value="${esc(o)}"${v === o ? " checked" : ""} required> ${esc(o)}</label>`)
+      .join("");
+    const other =
+      `<label><input type="radio" name="${q.id}" value="${esc(q.otherOption)}"${v === q.otherOption ? " checked" : ""} data-other> ${esc(q.otherOption)} (please specify)</label>` +
+      `<input class="other-text" type="text" name="${q.id}_other" maxlength="${q.otherMaxLength}" aria-label="${esc(q.otherOption)}: please specify" value="${esc(values[`${q.id}_other`] ?? "")}">`;
+    return `<fieldset class="single"><legend>${esc(q.text)}</legend>${opts}${other}</fieldset>`;
   }
   return `<fieldset><legend><label for="${q.id}">${esc(q.text)}</label></legend><textarea id="${q.id}" name="${q.id}" maxlength="${q.maxLength}"${q.required ? " required" : ""}>${esc(v ?? "")}</textarea></fieldset>`;
 }

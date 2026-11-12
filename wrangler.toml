@@ -23,6 +23,10 @@ RATE_LIMIT_SIGNIN_PER_HOUR = "30"
 RATE_LIMIT_SUBMIT_PER_HOUR = "10"
 # Results: channels with fewer responses than this are not broken out.
 MIN_CHANNEL_REPORT_SIZE = "5"
+# Results: KPI figures are broken out by role only for roles with at least this many responses.
+MIN_GROUP_REPORT_SIZE = "30"
+# KPI target: percent positive. 80 comes from the 2027 budget workbook (line L37); confirm it for 2026.
+KPI_TARGET_PCT = "80"
 # Turnstile site key (public). The secret goes in TURNSTILE_SECRET.
 TURNSTILE_SITE_KEY = "YOUR_TURNSTILE_SITE_KEY"
 # Slack workspace IDs whose members may sign in with Slack (comma separated, e.g. T0123ABC).

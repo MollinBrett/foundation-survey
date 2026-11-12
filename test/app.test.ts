@@ -73,15 +73,16 @@ function form(fields: Record<string, string | string[]>) {
 }
 
 const GOOD_ANSWERS = {
-  participation: ["Builder / developer"],
   familiarity: "4",
+  satisfaction: "4",
   impact: "3",
   independence: "dont_know",
-  transparency: "2",
-  priorities: ["Security", "Grants"],
-  news_sources: ["X"],
-  recommend: "7",
+  transparency_decisions: "2",
+  transparency_finances: "2",
+  listening: "3",
+  leadership: "dont_know",
   start_stop_change: "Publish the budget and the grant decisions every quarter.",
+  role: "Developer or builder",
   "cf-turnstile-response": "tok",
 };
 
@@ -156,8 +157,10 @@ describe("option A: sign in, answer once", () => {
     githubUser(45);
     const jar = new Jar();
     await signInGithub(jar);
-    const tooMany = await call("/survey", form({ ...GOOD_ANSWERS, priorities: ["Security", "Grants", "Education", "Governance"] }), jar);
-    expect(tooMany.status).toBe(400);
+    for (const bad of [{ satisfaction: "9" }, { familiarity: "dont_know" }, { role: "Astronaut" }, { leadership: "" }]) {
+      const res = await call("/survey", form({ ...GOOD_ANSWERS, ...bad }), jar);
+      expect(res.status).toBe(400);
+    }
     routes.push((url) => (url.host === "challenges.cloudflare.com" ? json({ success: false }) : undefined));
     const bot = await call("/survey", form(GOOD_ANSWERS), jar);
     expect(bot.status).toBe(400);
@@ -254,6 +257,62 @@ describe("agent API", () => {
     const post = () => call("/admin/api/reports", { method: "POST", headers: ADMIN, body: JSON.stringify({ kind: "final", text: "Done." }) });
     expect((await post()).status).toBe(200);
     expect((await post()).status).toBe(409);
+  });
+});
+
+describe("role question", () => {
+  it("stores the Other text only when Other is chosen", async () => {
+    githubUser(46);
+    const jar = new Jar();
+    await signInGithub(jar);
+    await call("/survey", form({ ...GOOD_ANSWERS, role: "Other", role_other: "Journalist" }), jar);
+    const row = await env.SURVEY_DB.prepare("SELECT answers FROM responses").first<{ answers: string }>();
+    expect(JSON.parse(row!.answers)).toMatchObject({ role: "Other", role_other: "Journalist", satisfaction: 4, leadership: "dont_know" });
+  });
+});
+
+describe("KPI results", () => {
+  let n = 0;
+  async function insert(answers: Record<string, unknown>, status = "accepted", channel = "github") {
+    await env.SURVEY_DB.prepare(
+      "INSERT INTO responses (id, channel, submitted_at, answers, status, status_category) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+    )
+      .bind(`r${++n}`, channel, new Date().toISOString(), JSON.stringify(answers), status, status === "quarantined" ? "spam" : null)
+      .run();
+  }
+  const base = { familiarity: 4, impact: 4, independence: 4, transparency_decisions: 4, transparency_finances: 4, listening: 4, leadership: 4 };
+
+  it("scores top two as positive, bottom two as negative, and leaves Don't know out", async () => {
+    // Developers (4): satisfaction 5, 4, 3, 1. Validators (2, below the test minimum of 3): 2, dont_know.
+    for (const s of [5, 4, 3, 1]) await insert({ ...base, satisfaction: s, role: "Developer or builder" });
+    await insert({ ...base, satisfaction: 2, role: "Validator or node operator", familiarity: 1 });
+    await insert({ ...base, satisfaction: "dont_know", role: "Validator or node operator", familiarity: 2 }, "accepted", "x");
+    await insert({ ...base, satisfaction: 1, role: "Developer or builder" }, "quarantined"); // must not count
+
+    const r = (await (await call("/admin/api/results", { headers: ADMIN })).json()) as any;
+    expect(r.respondents).toBe(6);
+    expect(r.familiar_respondents).toBe(4);
+    expect(r.target_pct_positive).toBe(80);
+    expect(r.quarantined_excluded).toEqual([{ category: "spam", n: 1 }]);
+    expect(r.respondents_by_channel).toEqual({ github: 5, "other channels": 1 });
+
+    const sat = r.kpis.find((k: any) => k.id === "satisfaction");
+    expect(sat.headline).toBe(true);
+    expect(sat.all).toMatchObject({ answered: 5, positive: 2, neutral: 1, negative: 2, dont_know: 1, pct_positive: 40, pct_negative: 40, meets_target: false });
+    expect(sat.familiar).toMatchObject({ answered: 4, positive: 2, pct_positive: 50 });
+    expect(Object.keys(sat.by_role)).toEqual(["Developer or builder"]); // validators are too few to report
+    expect(r.roles.find((x: any) => x.role === "Validator or node operator")).toMatchObject({ respondents: 2, reported: false });
+
+    const impact = r.kpis.find((k: any) => k.id === "impact");
+    expect(impact.all).toMatchObject({ pct_positive: 100, meets_target: true });
+    expect(r.kpis.map((k: any) => k.id)).toEqual([
+      "satisfaction", "impact", "independence", "transparency_decisions", "transparency_finances", "listening", "leadership",
+    ]);
+  });
+
+  it("reports no percentage when nobody answered", async () => {
+    const r = (await (await call("/admin/api/results", { headers: ADMIN })).json()) as any;
+    expect(r.kpis[0].all).toMatchObject({ answered: 0, pct_positive: null, meets_target: null });
   });
 });
 
