@@ -73,3 +73,34 @@ MATTERMOST_URL = ""
 # Every 15 minutes: publish approved announcements, self-check, clean up.
 [triggers]
 crons = ["*/15 * * * *"]
+
+# ---------------------------------------------------------------------------
+# TEST VERSION: a separate Worker (foundation-survey-test) with its own database.
+# Deploy with: npm run deploy:test       Nothing here affects the real survey.
+# The three YOUR_TEST_ values are filled in by `node scripts/set-test.mjs` (see README).
+# ---------------------------------------------------------------------------
+[[env.test.d1_databases]]
+binding = "SURVEY_DB"
+database_name = "foundation-survey-test"
+database_id = "YOUR_TEST_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[env.test.vars]
+PUBLIC_BASE_URL = "https://YOUR_TEST_URL"
+SURVEY_OPENS_AT = "2026-01-01T00:00:00Z"
+SURVEY_CLOSES_AT = "2027-12-31T00:00:00Z"
+MIN_ACCOUNT_AGE_DAYS = "30"
+RATE_LIMIT_SIGNIN_PER_HOUR = "30"
+RATE_LIMIT_SUBMIT_PER_HOUR = "10"
+# Low minimums so the results page shows breakdowns with only a few test responses.
+MIN_CHANNEL_REPORT_SIZE = "1"
+MIN_GROUP_REPORT_SIZE = "1"
+KPI_TARGET_PCT = "80"
+MAX_BLOCK_HOURS_NARROW = "24"
+MAX_BLOCK_HOURS_BROAD = "6"
+MAX_AUTO_BLOCKS_PER_DAY = "6"
+IDENTITY_RETENTION_DAYS = "30"
+# Cloudflare's published Turnstile test key: the bot check always passes. Test use only.
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+ACCESS_TEAM_DOMAIN = "YOUR_TEST_TEAM.cloudflareaccess.com"
+ACCESS_AUD = "YOUR_TEST_ACCESS_AUD"

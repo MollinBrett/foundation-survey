@@ -107,6 +107,65 @@ npm install
 npm test
 ```
 
+## Try a test version first
+
+A separate test Worker (`foundation-survey-test`, its own database, `[env.test]` in `wrangler.toml`) lets one person click through the real survey with only a Cloudflare account and a GitHub sign-in app. It uses Cloudflare's published Turnstile test key, so the bot check always passes, and it runs no agents and no scheduled jobs.
+
+```bash
+npx wrangler login
+```
+```bash
+npx wrangler d1 create foundation-survey-test
+```
+```bash
+node scripts/set-test.mjs db PASTE_THE_DATABASE_ID
+```
+```bash
+npm run db:migrate:test
+```
+```bash
+npm run deploy:test
+```
+```bash
+node scripts/set-test.mjs url PASTE_THE_ADDRESS_THE_DEPLOY_PRINTED
+```
+```bash
+openssl rand -base64 48 | npx wrangler secret put IDENTITY_PEPPER --env test
+```
+```bash
+openssl rand -base64 48 | npx wrangler secret put SESSION_SECRET --env test
+```
+```bash
+echo 1x0000000000000000000000000000000AA | npx wrangler secret put TURNSTILE_SECRET --env test
+```
+
+Create a GitHub OAuth app (GitHub, Settings, Developer settings, OAuth Apps) with the test address as homepage and `<test address>/auth/github/callback` as callback, then store its ID and secret and deploy again:
+
+```bash
+npx wrangler secret put GITHUB_CLIENT_ID --env test
+```
+```bash
+npx wrangler secret put GITHUB_CLIENT_SECRET --env test
+```
+```bash
+npm run deploy:test
+```
+
+For the results page, add a Cloudflare Access self-hosted application for `<test host>/results`, then:
+
+```bash
+node scripts/set-test.mjs access YOUR_TEAM.cloudflareaccess.com PASTE_THE_AUD_TAG
+```
+```bash
+npm run deploy:test
+```
+
+To take the test survey again with the same account:
+
+```bash
+npx wrangler d1 execute foundation-survey-test --remote --env test --command "DELETE FROM identities; DELETE FROM responses;"
+```
+
 ## Setup (once)
 
 Values to replace are marked `YOUR_...` in `wrangler.toml` and `agents/`. Secrets go in with `npx wrangler secret put NAME`, never in a file. Each channel works independently: the landing page only shows channels whose keys are set.

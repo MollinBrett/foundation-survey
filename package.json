@@ -9,7 +9,9 @@
     "db:migrate:remote": "wrangler d1 migrations apply SURVEY_DB --remote",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "fixtures": "node scripts/make-watchdog-fixtures.mjs"
+    "fixtures": "node scripts/make-watchdog-fixtures.mjs",
+    "deploy:test": "wrangler deploy --env test",
+    "db:migrate:test": "wrangler d1 migrations apply SURVEY_DB --remote --env test"
   },
   "dependencies": {
     "hono": "^4.13.17"
